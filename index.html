@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متاهة العقول - لعبة ألغاز</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --gold: #d4af37;
+            --gold-light: #f3e5ab;
+            --white: #ffffff;
+            --gray: #888888;
+            --accent: #222222;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--white);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background-color: var(--card-bg);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+            text-align: center;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .level-badge {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .score-badge {
+            color: var(--white);
+            background: var(--accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid var(--gold);
+        }
+
+        .puzzle-title {
+            color: var(--gold-light);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .puzzle-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #ddd;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background-color: var(--accent);
+            color: var(--white);
+            border: 1px solid #444;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            border-color: var(--gold);
+            background-color: #2a2a2a;
+            transform: translateY(-2px);
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            background-color: var(--accent);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 8px var(--gold);
+        }
+
+        .submit-btn {
+            background-color: var(--gold);
+            color: var(--bg-color);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--gold-light);
+        }
+
+        .hint-btn {
+            background: transparent;
+            border: 1px dashed var(--gray);
+            color: var(--gray);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .hint-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .message {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="game-header">
+            <span class="level-badge" id="level-indicator">المرحلة 1 من 4</span>
+            <span class="score-badge">النقاط: <span id="score-val">0</span></span>
+        </div>
+
+        <div id="game-body">
+            <h2 class="puzzle-title" id="puzzle-title">عنوان اللغز</h2>
+            <p class="puzzle-desc" id="puzzle-desc">نص اللغز سيظهر هنا...</p>
+            
+            <div id="input-area">
+                <!-- سيتم تغيير حقول الإدخال ديناميكياً حسب اللغز -->
+            </div>
+
+            <button class="hint-btn" onclick="showHint()">💡 طلب تلميح</button>
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        const puzzles = [
+            {
+                type: "text",
+                title: "لغز الغموض (التفكير الجانبي)",
+                desc: "شيء تراه في الظلام بوضوح تام، ولكنه يختفي تماماً في النور الساطع.. فما هو؟",
+                answer: "الظل",
+                hint: "يتكون خلفك أو بجانبك عندما تقف تحت مصباح ليلاً."
+            },
+            {
+                type: "options",
+                title: "متسلسلة الأرقام",
+                desc: "أوجد الرقم المفقود في المتسلسلة التالية:<br><b>2, 4, 8, 16, ?</b>",
+                options: ["24", "32", "30", "64"],
+                answer: "32",
+                hint: "كل رقم يساوي ضعف الرقم الذي قبله."
+            },
+            {
+                type: "text",
+                title: "لغز الكلمات",
+                desc: "ما هو الشيء الذي كلما أخذت منه كبر وكلما وضعت فيه صغر؟",
+                answer: "الحفرة",
+                hint: "حفرة الأرض التي تحفرها."
+            },
+            {
+                type: "options",
+                title: "اختبار الذكاء المنطقي",
+                desc: "إذا كان 5 عمال يحفرون 5 حفر في 5 أيام، فكم يوماً يحتاج عامل واحد لحفر حفرة واحدة؟",
+                options: ["1 يوم", "5 أيام", "25 يوماً", "أقل من يوم"],
+                answer: "5 أيام",
+                hint: "فكر في معدل إنجاز العامل الواحد بنفس السرعة."
+            }
+        ];
+
+        let currentLevel = 0;
+        let score = 0;
+
+        function loadPuzzle() {
+            if (currentLevel >= puzzles.length) {
+                document.querySelector('.game-container').innerHTML = `
+                    <h1 style="color: var(--gold);">🎉 تهانينا يا فهد!</h1>
+                    <p style="font-size: 1.2rem; margin: 20px 0;">لقد اجتزت متاهة العقول بنجاح وتغلبت على كل الألغاز!</p>
+                    <p class="score-badge" style="display: inline-block; font-size: 1.1rem; padding: 10px 20px;">مجموع نقاطك النهائي: ${score}</p>
+                    <br><br>
+                    <button class="submit-btn" onclick="location.reload()">إعادة اللعب</button>
+                `;
+                return;
+            }
+
+            const puzzle = puzzles[currentLevel];
+            document.getElementById('level-indicator').innerText = `المرحلة ${currentLevel + 1} من ${puzzles.length}`;
+            document.getElementById('puzzle-title').innerText = puzzle.title;
+            document.getElementById('puzzle-desc').innerHTML = puzzle.desc;
+            document.getElementById('message').innerText = "";
+
+            const inputArea = document.getElementById('input-area');
+            inputArea.innerHTML = "";
+
+            if (puzzle.type === "text") {
+                inputArea.innerHTML = `
+                    <input type="text" id="user-answer" placeholder="اكتب إجابتك هنا...">
+                    <br>
+                    <button class="submit-btn" onclick="checkTextAnswer()">تحقق من الإجابة</button>
+                `;
+            } else if (puzzle.type === "options") {
+                let gridHTML = '<div class="options-grid">';
+                puzzle.options.forEach(opt => {
+                    gridHTML += `<button class="option-btn" onclick="checkOptionAnswer('${opt}')">${opt}</button>`;
+                });
+                gridHTML += '</div>';
+                inputArea.innerHTML = gridHTML;
+            }
+        }
+
+        function checkTextAnswer() {
+            const userAns = document.getElementById('user-answer').value.trim();
+            const correctAns = puzzles[currentLevel].answer;
+            const msg = document.getElementById('message');
+
+            if (userAns === correctAns) {
+                msg.className = "message success";
+                msg.innerText = "إجابة صحيحة! أحسنت 🌟";
+                score += 25;
+                document.getElementById('score-val').innerText = score;
+                currentLevel++;
+                setTimeout(loadPuzzle, 1500);
+            } else {
+                msg.className = "message error";
+                msg.innerText = "إجابة خاطئة، حاول مرة أخرى!";
+            }
+        }
+
+        function checkOptionAnswer(selectedOpt) {
+            const correctAns = puzzles[currentLevel].answer;
+            const msg = document.getElementById('message');
+
+            if (selectedOpt === correctAns) {
+                msg.className = "message success";
+                msg.innerText = "إجابة صحيحة! أحسنت 🌟";
+                score += 25;
+                document.getElementById('score-val').innerText = score;
+                currentLevel++;
+                setTimeout(loadPuzzle, 1500);
+            } else {
+                msg.className = "message error";
+                msg.innerText = "إجابة خاطئة، حاول مرة أخرى!";
+            }
+        }
+
+        function showHint() {
+            const hint = puzzles[currentLevel].hint;
+            const msg = document.getElementById('message');
+            msg.className = "message";
+            msg.style.color = "var(--gold)";
+            msg.innerText = `تلميح: ${hint}`;
+        }
+
+        // تشغيل اللعبة عند فتح الصفحة
+        loadPuzzle();
+    </script>
+</body>
+</html>
