@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سري للغاية - النسخة السعودية</title>
+    <title>كودنيمز - النسخة السعودية</title>
     <style>
         :root {
-            --bg-color: #0b0b0b;
-            --card-bg: #1f1f1f;
+            --bg-color: #0c0c0e;
+            --panel-bg: #16161a;
+            --card-bg: #23232b;
             --gold: #d4af37;
-            --gold-light: #f3e5ab;
-            --white: #ffffff;
-            --red-team: #c0392b;
-            --blue-team: #2980b9;
-            --neutral: #7f8c8d;
-            --bomb: #2c3e50;
+            --red-team: #d32f2f;
+            --blue-team: #1976d2;
+            --neutral: #546e7a;
+            --assassin: #212121;
+            --text-main: #ffffff;
+            --text-muted: #b0bec5;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
-            color: var(--white);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
             display: flex;
@@ -31,158 +32,230 @@
 
         h1 {
             color: var(--gold);
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            margin: 5px 0 15px 0;
+            text-align: center;
         }
 
-        .subtitle {
-            color: #aaa;
-            font-size: 1rem;
-            margin-bottom: 20px;
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 750px;
+            background: var(--panel-bg);
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #333;
+            font-size: 1.1rem;
+            font-weight: bold;
         }
 
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+        .turn-red { color: var(--red-team); text-shadow: 0 0 8px rgba(211,47,47,0.4); }
+        .turn-blue { color: var(--blue-team); text-shadow: 0 0 8px rgba(25,118,210,0.4); }
+
+        .control-panel {
+            display: flex;
             gap: 15px;
-            max-width: 600px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--gold);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.95rem;
+        }
+
+        button:hover {
+            background-color: var(--gold);
+            color: var(--bg-color);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            max-width: 750px;
             width: 100%;
             margin-bottom: 20px;
         }
 
         .card {
             background-color: var(--card-bg);
-            border: 2px solid #444;
-            border-radius: 12px;
-            height: 80px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            aspect-ratio: 4/3;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
             user-select: none;
+            transition: all 0.2s ease;
+            text-align: center;
+            padding: 5px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
         .card:hover {
             border-color: var(--gold);
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
-        /* ألوان الكروت بعد الكشف */
-        .card.team-red {
+        /* حالة الكروت بعد الكشف */
+        .card.revealed-red {
             background-color: var(--red-team);
-            border-color: #e74c3c;
+            border-color: #ff5252;
             color: white;
+            cursor: default;
         }
 
-        .card.team-blue {
+        .card.revealed-blue {
             background-color: var(--blue-team);
-            border-color: #3498db;
+            border-color: #448aff;
             color: white;
+            cursor: default;
         }
 
-        .card.neutral {
+        .card.revealed-neutral {
             background-color: var(--neutral);
-            border-color: #95a5a6;
-            color: #ddd;
+            border-color: #78909c;
+            color: #cfd8dc;
+            cursor: default;
         }
 
-        .card.bomb {
-            background-color: var(--bomb);
-            border-color: #e74c3c;
-            color: #e74c3c;
-            text-shadow: 0 0 8px #e74c3c;
+        .card.revealed-assassin {
+            background-color: var(--assassin);
+            border-color: #d32f2f;
+            color: #ff5252;
+            box-shadow: 0 0 15px #d32f2f;
+            cursor: default;
         }
 
-        .status-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--gold);
-            padding: 15px 25px;
-            border-radius: 10px;
+        /* وضع الجاسوس (Spymaster Mode) - يظهر الألوان بحدود أو خلفية خفيفة */
+        .spymaster-mode .card:not(.revealed-red):not(.revealed-blue):not(.revealed-neutral):not(.revealed-assassin).role-red {
+            border: 3px dashed var(--red-team);
+        }
+        .spymaster-mode .card:not(.revealed-red):not(.revealed-blue):not(.revealed-neutral):not(.revealed-assassin).role-blue {
+            border: 3px dashed var(--blue-team);
+        }
+        .spymaster-mode .card:not(.revealed-red):not(.revealed-blue):not(.revealed-neutral):not(.revealed-assassin).role-neutral {
+            border: 3px dashed var(--neutral);
+        }
+        .spymaster-mode .card:not(.revealed-red):not(.revealed-blue):not(.revealed-neutral):not(.revealed-assassin).role-assassin {
+            border: 3px dashed #ff5252;
+            background-color: #1a0505;
+        }
+
+        .status-msg {
+            background: var(--panel-bg);
+            border: 1px solid #444;
+            padding: 12px 25px;
+            border-radius: 8px;
             text-align: center;
             font-size: 1.1rem;
-            margin-top: 10px;
-        }
-
-        .reset-btn {
-            background-color: var(--gold);
-            color: var(--bg-color);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: 0.3s;
-        }
-
-        .reset-btn:hover {
-            background-color: var(--gold-light);
+            max-width: 750px;
+            width: 100%;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-    <h1>سري للغاية (نسخة كودنيمز السعودية) 🇸🇦</h1>
-    <div class="subtitle">اختر الكلمات بناءً على تلميح قائد الفريق!</div>
+    <h1>كودنيمز (النسخة السعودية) 🇸🇦</h1>
 
-    <div class="game-board" id="board">
-        <!-- سيتم توليد الكروت هنا برمجياً -->
+    <div class="game-info">
+        <div>دور الفريق: <span id="current-team" class="turn-red">الصقور (الأحمر)</span></div>
+        <div>المتبقي: <span style="color:var(--red-team)">🔴 <span id="red-left">9</span></span> | <span style="color:var(--blue-team)">🔵 <span id="blue-left">8</span></span></div>
     </div>
 
-    <div class="status-panel" id="status-msg">
-        دور فريق الصقور 🦅 (ابحث عن الكلمات المرتبطة)
+    <div class="control-panel">
+        <button onclick="toggleSpymaster()">👁️ وضع القائد (Spymaster)</button>
+        <button onclick="endTurn()">إنهاء الدور</button>
+        <button onclick="initGame()" style="border-color: var(--red-team);">🔄 لعبة جديدة</button>
     </div>
 
-    <button class="reset-btn" onclick="initGame()">إعادة اللعبة</button>
+    <div class="board" id="board"></div>
+
+    <div class="status-msg" id="status-msg">
+        قائد فريق الصقور يعطي التلميح الآن.. اختر الكلمات بعناية!
+    </div>
 
     <script>
-        // بنك الكلمات السعودي
-        const saudiWords = [
+        // بنك كلمات سعودي ضخم ومتنوع (أماكن، أكلات، مصطلحات، ثقافة)
+        const dictionary = [
             "كبسة", "ددسن", "الثمامة", "قهوة", "شاص", 
             "طويق", "البجيري", "جريش", "بوليفارد", "فنجان", 
-            "ساهر", "كشتة", "فزعة", "سحبة"
+            "ساهر", "كشتة", "فزعة", "قرص", "مفطح",
+            "علا", "حوطة", "بريدة", "تندرا", "مرور",
+            "كبوت", "سمبوسة", "لقيمات", "دلة", "هلي",
+            "نيسان", "سفاري", "عريجاء", "الملز", "دابور"
         ];
 
         let boardData = [];
+        let currentTeam = 'red'; // 'red' يبدأ بـ 9 كروت، 'blue' بـ 8
+        let isSpymaster = false;
+        let gameOver = false;
+        let redRemaining = 9;
+        let blueRemaining = 8;
 
         function initGame() {
-            // خلط الكلمات واختيار 12 كلمة للوحة
-            let shuffled = [...saudiWords].sort(() => 0.5 - Math.random());
-            let selectedWords = shuffled.slice(0, 12);
+            gameOver = false;
+            isSpymaster = false;
+            currentTeam = 'red';
+            redRemaining = 9;
+            blueRemaining = 8;
 
-            // توزيع عشوائي للأدوار (فريق أحمر، فريق أزرق، محايد، قنبلة واحدة)
-            let roles = ['red', 'red', 'red', 'blue', 'blue', 'blue', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'bomb'];
+            // خلط واختيار 25 كلمة للوحة (شبكة 5x5 الأصلية)
+            let shuffledWords = [...dictionary].sort(() => 0.5 - Math.random()).slice(0, 25);
+
+            // توزيع الأدوار: الأحمر يبدأ بـ 9، الأزرق 8، محايد 7، واغتيال (قنبلة) 1 إجمالي 25
+            let roles = [
+                ...Array(9).fill('red'),
+                ...Array(8).fill('blue'),
+                ...Array(7).fill('neutral'),
+                'assassin'
+            ];
             roles.sort(() => 0.5 - Math.random());
 
-            boardData = selectedWords.map((word, index) => ({
+            boardData = shuffledWords.map((word, index) => ({
                 word: word,
                 role: roles[index],
                 revealed: false
             }));
 
-            renderBoard();
-            document.getElementById('status-msg').innerText = "اللعبة بدأت! اختر كلمة بناءً على التلميح.";
+            updateUI();
         }
 
         function renderBoard() {
             const board = document.getElementById('board');
             board.innerHTML = "";
+            
+            if (isSpymaster) {
+                board.classList.add('spymaster-mode');
+            } else {
+                board.classList.remove('spymaster-mode');
+            }
 
             boardData.forEach((item, index) => {
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = `card role-${item.role}`;
                 card.innerText = item.word;
 
                 if (item.revealed) {
-                    if (item.role === 'red') card.classList.add('team-red');
-                    else if (item.role === 'blue') card.classList.add('team-blue');
-                    else if (item.role === 'neutral') card.classList.add('neutral');
-                    else if (item.role === 'bomb') card.classList.add('bomb', 'revealed-bomb');
-                    card.innerText += item.role === 'bomb' ? ' 💣' : '';
+                    if (item.role === 'red') card.classList.add('revealed-red');
+                    else if (item.role === 'blue') card.classList.add('revealed-blue');
+                    else if (item.role === 'neutral') card.classList.add('revealed-neutral');
+                    else if (item.role === 'assassin') card.classList.add('revealed-assassin', 'role-assassin');
                 }
 
                 card.onclick = () => revealCard(index);
@@ -191,30 +264,79 @@
         }
 
         function revealCard(index) {
-            if (boardData[index].revealed) return;
+            if (gameOver || boardData[index].revealed) return;
 
             boardData[index].revealed = true;
-            renderBoard();
+            let role = boardData[index].role;
+            let msg = document.getElementById('status-msg');
 
-            const msg = document.getElementById('status-msg');
-            if (boardData[index].role === 'bomb') {
-                msg.innerText = "💥 يا لطيف! طحتم في القنبلة (ساهر)! انتهت اللعبة!";
-                revealAll();
-            } else if (boardData[index].role === 'neutral') {
-                msg.innerText = "هذي كلمة عادية (محايدة)، راح الدور على الفريق الثاني.";
+            if (role === 'assassin') {
+                gameOver = true;
+                msg.innerHTML = `💥 يا لطيف! طحتم في كرت الاغتيال (<span style="color:#ff5252">${boardData[index].word}</span>)! فاز الفريق الخصم!`;
+                isSpymaster = true; // يكشف اللوحة كاملة عند الخسارة
+                renderBoard();
+                return;
+            }
+
+            if (role === 'red') {
+                redRemaining--;
+                if (redRemaining === 0) {
+                    gameOver = true;
+                    msg.innerHTML = "🎉 مبروك! فريق الصقور (الأحمر) جمع كل كلماته وفاز باللعبة!";
+                    renderBoard();
+                    return;
+                }
+            } else if (role === 'blue') {
+                blueRemaining--;
+                if (blueRemaining === 0) {
+                    gameOver = true;
+                    msg.innerHTML = "🎉 مبروك! فريق النمور (الأزرق) جمع كل كلماته وفاز باللعبة!";
+                    renderBoard();
+                    return;
+                }
+            }
+
+            // نظام انتقال الدور عند اختيار خطأ (كرت الخصم أو كرت محايد)
+            if (role !== currentTeam) {
+                currentTeam = (currentTeam === 'red') ? 'blue' : 'red';
+                msg.innerText = `إجابة خاطئة أو كرت محايد! انتقل الدور إلى الفريق الآخر.`;
             } else {
-                msg.innerText = "إصابة موفقة! كرت تابع لفريقك، كمل لعب.";
+                msg.innerText = `إصابة موفقة لفريقك! استمر في الاختيار أو أنهِ دورك.`;
+            }
+
+            updateUI();
+        }
+
+        function endTurn() {
+            if (gameOver) return;
+            currentTeam = (currentTeam === 'red') ? 'blue' : 'red';
+            let teamName = currentTeam === 'red' ? 'الصقور (الأحمر)' : 'النمور (الأزرق)';
+            document.getElementById('status-msg').innerText = `انتقل الدور رسمياً إلى فريق ${teamName}. بانتظار تلميح القائد..`;
+            updateUI();
+        }
+
+        function toggleSpymaster() {
+            isSpymaster = !isSpymaster;
+            renderBoard();
+        }
+
+        function updateUI() {
+            renderBoard();
+            document.getElementById('red-left').innerText = redRemaining;
+            document.getElementById('blue-left').innerText = blueRemaining;
+            
+            let teamSpan = document.getElementById('current-team');
+            if (currentTeam === 'red') {
+                teamSpan.className = "turn-red";
+                teamSpan.innerText = "الصقور (الأحمر)";
+            } else {
+                teamSpan.className = "turn-blue";
+                teamSpan.innerText = "النمور (الأزرق)";
             }
         }
 
-    function revealAll() {
-        boardData.forEach(item => item.revealed = true);
-        renderBoard();
-    }
-
-    // تشغيل اللعبة لأول مرة
-    initGame();
-</script>
-
+        // تشغيل اللعبة عند فتح الصفحة
+        initGame();
+    </script>
 </body>
 </html>
